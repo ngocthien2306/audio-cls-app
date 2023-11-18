@@ -9,6 +9,8 @@ import models as models
 class Settings(BaseSettings):
     # database configurations
     DATABASE_URL: Optional[str] = None
+    
+    MODEL_PATH: Optional[str] = None
 
     # JWT
     secret_key: str = "secret"

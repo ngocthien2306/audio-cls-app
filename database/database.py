@@ -4,9 +4,12 @@ from beanie import PydanticObjectId
 
 from models.admin import Admin
 from models.student import Student
+from models.audio import Predictions
 
 admin_collection = Admin
 student_collection = Student
+preductions_collection = Predictions
+
 
 
 async def add_admin(new_admin: Admin) -> Admin:
@@ -17,6 +20,26 @@ async def add_admin(new_admin: Admin) -> Admin:
 async def retrieve_students() -> List[Student]:
     students = await student_collection.all().to_list()
     return students
+
+async def add_predictions(new_pred: Predictions) -> Predictions:
+    preduction = await new_pred.create()
+    return preduction
+
+async def retrieve_predictions() -> List[Predictions]:
+    predictions = await preductions_collection.all().to_list()
+    return predictions
+
+async def retrieve_prediction(id: PydanticObjectId) -> Predictions:
+    prediction = await preductions_collection.get(id)
+    if prediction:
+        return prediction
+    
+async def delete_prediction(id: PydanticObjectId) -> bool:
+    prediction = await preductions_collection.get(id)
+    if prediction:
+        await prediction.delete()
+        return True
+
 
 
 async def add_student(new_student: Student) -> Student:

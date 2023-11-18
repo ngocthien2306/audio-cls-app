@@ -130,3 +130,7 @@ dmypy.json
 .idea/
 
 .vercel
+
+audio-env/
+assets/
+public/
