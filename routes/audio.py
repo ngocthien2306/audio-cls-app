@@ -16,7 +16,7 @@ model = tf.saved_model.load(r'\audio-cls-app\deep\models')
 @router.post("/v1/predict", response_description="Audio classify", response_model=ResponseAudio)
 async def audio_classify(file: UploadFile):
     print(file.content_type)
-    if file.content_type != 'audio/wav':
+    if file.content_type != 'audio/wav' and file.content_type != 'audio/mpeg':
         return {
             "status_code": 400,
             "response_type": "error",
@@ -45,7 +45,7 @@ async def audio_classify(file: UploadFile):
     prediction_data = {
         'class_ids': prediction['class_ids'].numpy().tolist()[0],
         'class_names': prediction['class_names'].numpy().tolist()[0],
-        'predictions': round(prediction['predictions'].numpy().max().tolist(), 4),
+        'predictions': round(prediction['predictions'].numpy().max().tolist(), 4) * 100,
         'inference_time': (end_time - start_time),
         'predicted_at': datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S'),
         'file_path': audio_path,
@@ -66,7 +66,8 @@ async def audio_classify(file: UploadFile):
 @router.post("/v1/predict-base64", response_description="Audio classify", response_model=ResponseAudio)
 async def audio_classify_base64(request: RequestAudio = Body(...)):
     # Decode the base64 audio data
-    print(request)
+    start_time = time.time()
+    
     try:
         audio_bytes = base64.b64decode(request.audio_data)
     except Exception as e:
@@ -88,7 +89,6 @@ async def audio_classify_base64(request: RequestAudio = Body(...)):
 
     # Read the saved WAV file and perform prediction
     waveform = read_audio_to_wavform(audio_path)
-    start_time = time.time()
     prediction = predict(model, waveform)
     end_time = time.time()
 
@@ -99,7 +99,7 @@ async def audio_classify_base64(request: RequestAudio = Body(...)):
     prediction_data = {
         'class_ids': prediction['class_ids'].numpy().tolist()[0],
         'class_names': prediction['class_names'].numpy().tolist()[0].decode(),
-        'predictions': round(prediction['predictions'].numpy().max().tolist(), 4),
+        'predictions': round(prediction['predictions'].numpy().max().tolist(), 4) * 100,
         'inference_time': (end_time - start_time),
         'predicted_at': datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S'),
         'file_path': audio_path,
@@ -108,6 +108,11 @@ async def audio_classify_base64(request: RequestAudio = Body(...)):
     
     prediction_data = Predictions(**prediction_data)
     new_pred = await add_predictions(prediction_data)
+    
+    end_time = time.time()
+    
+    prediction_data = prediction_data.dict()
+    prediction_data['inference_time'] = (end_time - start_time)
 
     return {
         "status_code": 200,

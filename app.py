@@ -5,7 +5,7 @@ from config.config import initiate_database
 from routes.admin import router as AdminRouter
 from routes.student import router as StudentRouter
 from routes.audio import router as AudioRouter
-
+from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 
 token_listener = JWTBearer()
@@ -20,7 +20,7 @@ async def start_database():
 async def read_root():
     return {"message": "Welcome to this fantastic app."}
 
-
+app.mount("/public", StaticFiles(directory="public"), name="public")
 app.include_router(AdminRouter, tags=["Administrator"], prefix="/admin")
 app.include_router(AudioRouter, tags=["Audio"], prefix="/audio")
 # app.include_router(StudentRouter,tags=["Students"],prefix="/student",dependencies=[Depends(token_listener)],)
