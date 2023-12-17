@@ -134,3 +134,4 @@ dmypy.json
 audio-env/
 assets/
 public/
+deep/models/
